@@ -1,5 +1,5 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
+import 'dart:math';
 
 void main() {
   runApp(MyApp());
@@ -11,7 +11,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Hospital App',
       theme: ThemeData(
-        primarySwatch: Colors.yellow,
+        primarySwatch: Colors.green,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: UserTypeSelection(),
@@ -54,7 +54,7 @@ class UserTypeSelection extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => NurseInterface()),
+                  MaterialPageRoute(builder: (context) => NurseLogin()),
                 );
               },
               child: Text('Enfermera', style: TextStyle(fontSize: 20)),
@@ -95,12 +95,78 @@ class PatientInterface extends StatelessWidget {
   }
 }
 
-class NurseInterface extends StatefulWidget {
+class NurseLogin extends StatefulWidget {
   @override
-  _NurseInterfaceState createState() => _NurseInterfaceState();
+  _NurseLoginState createState() => _NurseLoginState();
 }
 
-class _NurseInterfaceState extends State<NurseInterface> {
+class _NurseLoginState extends State<NurseLogin> {
+  TextEditingController _usernameController = TextEditingController();
+  TextEditingController _passwordController = TextEditingController();
+  String _errorMessage = '';
+
+  void _login() {
+    if (_usernameController.text == 'enfermera_123' &&
+        _passwordController.text == '1234') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => NurseInterface()),
+      );
+    } else {
+      setState(() {
+        _errorMessage = 'Credenciales inválidas. Inténtelo de nuevo.';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Iniciar Sesión - Enfermera'),
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(20),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextField(
+              controller: _usernameController,
+              decoration: InputDecoration(
+                labelText: 'Nombre de Usuario',
+              ),
+            ),
+            SizedBox(height: 20),
+            TextField(
+              controller: _passwordController,
+              decoration: InputDecoration(
+                labelText: 'Contraseña',
+              ),
+              obscureText: true,
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _login,
+              style: ElevatedButton.styleFrom(
+                primary: Colors.red,
+                onPrimary: Colors.white,
+                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+              ),
+              child: Text('Iniciar Sesión', style: TextStyle(fontSize: 20)),
+            ),
+            SizedBox(height: 10),
+            Text(
+              _errorMessage,
+              style: TextStyle(color: Colors.red),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class NurseInterface extends StatelessWidget {
   final List<Map<String, dynamic>> patients = List.generate(8, (index) {
     List<String> names = [
       'Juan',
@@ -124,22 +190,6 @@ class _NurseInterfaceState extends State<NurseInterface> {
     };
   });
 
-  late List<String> calls;
-  late List<String> patientInfo;
-
-  @override
-  void initState() {
-    super.initState();
-    calls = [];
-    patientInfo = [];
-  }
-
-  String getRandomPatient() {
-    Random random = Random();
-    int index = random.nextInt(patients.length);
-    return patients[index]['name'];
-  }
-
   String _getRandomCondition() {
     Random random = Random();
     List<String> conditions = ['Estable', 'Grave', 'Crítica'];
@@ -147,25 +197,20 @@ class _NurseInterfaceState extends State<NurseInterface> {
     return conditions[index];
   }
 
-  void handleCall() {
-    String callingPatient = getRandomPatient();
-    for (var patient in patients) {
-      if (patient['name'] == callingPatient) {
-        patient['calling'] = true;
-        calls.insert(0, patient['name']);
-        patientInfo.insert(
-            0,
-            "Detalles del paciente: " +
-                patient['name'] +
-                ' - ' +
-                patient['condition']);
-      }
+  List<String> _getRandomCalls() {
+    List<String> randomCalls = [];
+    Random random = Random();
+    for (int i = 0; i < 3; i++) {
+      int index = random.nextInt(patients.length);
+      randomCalls.add(patients[index]['name']);
     }
-    setState(() {});
+    return randomCalls;
   }
 
   @override
   Widget build(BuildContext context) {
+    List<String> calls = _getRandomCalls();
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Enfermera - Información del Paciente'),
@@ -175,38 +220,19 @@ class _NurseInterfaceState extends State<NurseInterface> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ElevatedButton(
-              onPressed: handleCall,
-              style: ElevatedButton.styleFrom(
-                primary: Colors.red,
-                onPrimary: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-              ),
-              child: Text('Atender Llamada', style: TextStyle(fontSize: 20)),
-            ),
-            SizedBox(height: 20),
             Text(
               'Llamadas Recientes:',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 10),
-            Expanded(
-              child: ListView.builder(
-                itemCount: calls.length,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Text(
-                      calls[index],
-                      style: TextStyle(fontSize: 18),
-                    ),
-                    subtitle: Text(
-                      patientInfo[index],
-                      style: TextStyle(fontSize: 16),
-                    ),
-                  );
-                },
+            for (var call in calls)
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 5),
+                child: Text(
+                  call,
+                  style: TextStyle(fontSize: 18),
+                ),
               ),
-            ),
             SizedBox(height: 20),
             Text(
               'Lista de Pacientes:',
@@ -224,7 +250,7 @@ class _NurseInterfaceState extends State<NurseInterface> {
                       style: TextStyle(fontSize: 18),
                     ),
                     subtitle: Text(
-                      'Condición: ' + patients[index]['condition'],
+                      'Condición: ${patients[index]['condition']}',
                       style: TextStyle(fontSize: 16),
                     ),
                   );
