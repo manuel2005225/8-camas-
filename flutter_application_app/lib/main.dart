@@ -32,14 +32,14 @@ class UserTypeSelection extends StatelessWidget {
           children: [
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                primary: Colors.blue,
+                primary: const Color.fromRGBO(0, 219, 143, 86),
                 onPrimary: Colors.white,
                 padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
               ),
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => PatientInterface()),
+                  MaterialPageRoute(builder: (context) => PatientLogin('1A')),
                 );
               },
               child: Text('Paciente', style: TextStyle(fontSize: 20)),
@@ -47,7 +47,7 @@ class UserTypeSelection extends StatelessWidget {
             SizedBox(height: 20),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                primary: Colors.blue,
+                primary: const Color.fromRGBO(0, 219, 143, 86),
                 onPrimary: Colors.white,
                 padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
               ),
@@ -66,12 +66,84 @@ class UserTypeSelection extends StatelessWidget {
   }
 }
 
-class PatientInterface extends StatelessWidget {
+class PatientLogin extends StatefulWidget {
+  final String patientId;
+
+  PatientLogin(this.patientId);
+
+  @override
+  _PatientLoginState createState() => _PatientLoginState();
+}
+
+class _PatientLoginState extends State<PatientLogin> {
+  TextEditingController _passwordController = TextEditingController();
+  String _errorMessage = '';
+
+  void _login() {
+    String expectedPassword = 'paciente_${widget.patientId}';
+    if (_passwordController.text == expectedPassword) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => PatientInterface(widget.patientId)),
+      );
+    } else {
+      setState(() {
+        _errorMessage = 'Contraseña incorrecta. Inténtelo de nuevo.';
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Paciente - Llamar a la enfermera'),
+        title: Text('Iniciar Sesión - Paciente ${widget.patientId}'),
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(20),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextField(
+              controller: _passwordController,
+              decoration: InputDecoration(
+                labelText: 'Contraseña',
+              ),
+              obscureText: true,
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _login,
+              style: ElevatedButton.styleFrom(
+                primary: Colors.blue,
+                onPrimary: Colors.white,
+                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+              ),
+              child: Text('Iniciar Sesión', style: TextStyle(fontSize: 20)),
+            ),
+            SizedBox(height: 10),
+            Text(
+              _errorMessage,
+              style: TextStyle(color: Colors.red),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class PatientInterface extends StatelessWidget {
+  final String patientId;
+
+  PatientInterface(this.patientId);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Paciente $patientId - Llamar a la enfermera'),
       ),
       body: Center(
         child: ElevatedButton(
@@ -166,42 +238,48 @@ class _NurseLoginState extends State<NurseLogin> {
   }
 }
 
-class NurseInterface extends StatelessWidget {
+class NurseInterface extends StatefulWidget {
+  @override
+  _NurseInterfaceState createState() => _NurseInterfaceState();
+}
+
+class _NurseInterfaceState extends State<NurseInterface> {
   final List<Map<String, dynamic>> patients = List.generate(8, (index) {
     List<String> names = [
       'Juan',
-      'María',
-      'José',
-      'Ana',
+      'Maria',
       'Carlos',
       'Laura',
       'Pedro',
-      'Rosa'
+      'Ana',
+      'Sofia',
+      'Diego'
     ];
     return {
       'name': names[index],
       'condition': () {
-        Random random = Random();
-        List<String> conditions = ['Estable', 'Grave', 'Crítica'];
-        int index = random.nextInt(3);
-        return conditions[index];
+        List<String> conditions = ['Estable', 'Grave', 'Crítico'];
+        return conditions[Random().nextInt(conditions.length)];
       }(),
-      'calling': false,
+      'calling': Random().nextBool(),
     };
   });
 
   String _getRandomCondition() {
-    Random random = Random();
-    List<String> conditions = ['Estable', 'Grave', 'Crítica'];
-    int index = random.nextInt(3);
-    return conditions[index];
+    List<String> conditions = ['Estable', 'Grave', 'Crítico'];
+    return conditions[Random().nextInt(conditions.length)];
   }
 
   List<String> _getRandomCalls() {
     List<String> randomCalls = [];
     Random random = Random();
-    for (int i = 0; i < 3; i++) {
-      int index = random.nextInt(patients.length);
+    int numCalls =
+        random.nextInt(8) + 1; // Número aleatorio de llamadas entre 1 y 8
+    Set<int> indices = Set();
+    while (indices.length < numCalls) {
+      indices.add(random.nextInt(patients.length));
+    }
+    for (var index in indices) {
       randomCalls.add(patients[index]['name']);
     }
     return randomCalls;
