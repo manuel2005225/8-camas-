@@ -11,7 +11,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Hospital App',
       theme: ThemeData(
-        primarySwatch: Colors.green,
+        primarySwatch: Colors.indigo,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: UserTypeSelection(),
@@ -261,9 +261,11 @@ class _NurseInterfaceState extends State<NurseInterface> {
         List<String> conditions = ['Estable', 'Grave', 'Crítico'];
         return conditions[Random().nextInt(conditions.length)];
       }(),
-      'calling': Random().nextBool(),
+      'calling': false,
     };
   });
+
+  List<String> calls = [];
 
   String _getRandomCondition() {
     List<String> conditions = ['Estable', 'Grave', 'Crítico'];
@@ -273,21 +275,24 @@ class _NurseInterfaceState extends State<NurseInterface> {
   List<String> _getRandomCalls() {
     List<String> randomCalls = [];
     Random random = Random();
-    int numCalls =
-        random.nextInt(8) + 1; // Número aleatorio de llamadas entre 1 y 8
+    int numAdditionalCalls = random
+        .nextInt(7); // Número aleatorio de llamadas adicionales entre 0 y 6
     Set<int> indices = Set();
-    while (indices.length < numCalls) {
-      indices.add(random.nextInt(patients.length));
-    }
-    for (var index in indices) {
-      randomCalls.add(patients[index]['name']);
+    while (indices.length < numAdditionalCalls) {
+      int index = random.nextInt(patients.length);
+      if (!indices.contains(index)) {
+        indices.add(index);
+        patients[index]['calling'] = true; // Marcar al paciente como "llamando"
+        randomCalls.add(patients[index]
+            ['name']); // Agregar a la lista de llamadas pendientes
+      }
     }
     return randomCalls;
   }
 
   @override
   Widget build(BuildContext context) {
-    List<String> calls = _getRandomCalls();
+    calls = _getRandomCalls();
 
     return Scaffold(
       appBar: AppBar(
