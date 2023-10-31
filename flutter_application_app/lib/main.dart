@@ -261,7 +261,7 @@ class _NurseInterfaceState extends State<NurseInterface> {
         List<String> conditions = ['Estable', 'Grave', 'Crítico'];
         return conditions[Random().nextInt(conditions.length)];
       }(),
-      'calling': false,
+      'calling': index == 0,
     };
   });
 
@@ -274,13 +274,15 @@ class _NurseInterfaceState extends State<NurseInterface> {
 
   List<String> _getRandomCalls() {
     List<String> randomCalls = [];
+    randomCalls
+        .add(patients[0]['name']); // El primer paciente siempre está llamando
     Random random = Random();
-    int numAdditionalCalls = random
-        .nextInt(7); // Número aleatorio de llamadas adicionales entre 0 y 6
+    int numAdditionalCalls = random.nextInt(6) +
+        1; // Número aleatorio de llamadas adicionales entre 1 y 6
     Set<int> indices = Set();
     while (indices.length < numAdditionalCalls) {
       int index = random.nextInt(patients.length);
-      if (!indices.contains(index)) {
+      if (index != 0 && !indices.contains(index)) {
         indices.add(index);
         patients[index]['calling'] = true; // Marcar al paciente como "llamando"
         randomCalls.add(patients[index]
